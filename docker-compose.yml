@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  rental-management-service:
+    build:
+      context: ./rental-management-service
+    container_name: rental-management-service
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./rental-management-service/.env
+    depends_on:
+      - mongo
+      - rabbitmq
+    networks:
+      - rental-network
+
+  send-email-service:
+    build:
+      context: ./send-email-service
+    container_name: send-email-service
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./send-email-service/.env
+    depends_on:
+      - rabbitmq
+    networks:
+      - rental-network
+
+  mongo:
+    image: mongo
+    container_name: rental-management-service-data
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - rental-network
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    ports:
+      - "5672:5672" 
+      - "15672:15672"
+    networks:
+      - rental-network
+
+volumes:
+  mongo_data:
+
+
+networks:
+  rental-network:
+    driver: bridge

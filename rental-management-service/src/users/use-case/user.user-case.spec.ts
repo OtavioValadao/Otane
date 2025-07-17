@@ -1,0 +1,148 @@
+import { Test, TestingModule } from "@nestjs/testing";
+import { UserEntity } from "../domain/entities/user.entity";
+import { UserUseCase } from "./user.use-case";
+import { MongoUserRepository } from "../infra/repositories/mongo.users.repository";
+import { UserDto } from "../domain/dtos/user.dto";
+import { HttpStatus } from "@nestjs/common";
+import { Types } from "mongoose";
+import { HttpCustomErrors } from "../domain/errors/http.custom.error.erros";
+import { firstValueFrom, Observable, of, throwError } from "rxjs";
+
+describe('UserUseCase', () => {
+    let userUseCase: UserUseCase;
+    let userRepository: {
+        saveUser: jest.Mock<Observable<UserDto>, [UserDto]>,
+        getUserByCpf: jest.Mock<Observable<UserEntity | null>, string[]>,
+        deleteUserByCpf: jest.Mock<Observable<void>, [string]>,
+        updateUser: jest.Mock<Observable<UserDto>, [UserDto]>,
+    };
+
+    const mockUserDto: UserDto = {
+        firstName: 'firstName',
+        lastName: 'lastName',
+        email: 'email@example.com',
+        age: 30,
+        bornDate: new Date('1993-10-10'),
+        cpf: '12345678900',
+        _id: new Types.ObjectId(),
+        __v: 0,
+        isActive: true,
+    };
+
+    const mockUserEntity: UserEntity = {
+        ...mockUserDto,
+        isActive: true,
+    };
+
+    let mockRepo: jest.Mocked<MongoUserRepository>;
+
+    beforeEach(async () => {
+        userRepository = {
+            saveUser: jest.fn(),
+            getUserByCpf: jest.fn(),
+            deleteUserByCpf: jest.fn(),
+            updateUser: jest.fn(),
+        };
+
+        const module: TestingModule = await Test.createTestingModule({
+            providers: [
+                UserUseCase,
+                {
+                    provide: MongoUserRepository,
+                    useValue: userRepository,
+                },
+            ],
+        }).compile();
+
+        userUseCase = module.get<UserUseCase>(UserUseCase);
+
+    });
+
+    describe('createUser', () => {
+        it('should create a user and return UserDto', async () => {
+            // Mock saveUser para retornar Observable com mockUserDto
+            userRepository.saveUser.mockReturnValueOnce(of(mockUserDto));
+
+            const result$ = userUseCase.createUser(mockUserDto);
+
+            const result = await firstValueFrom(result$);
+
+            expect(userRepository.saveUser).toHaveBeenCalledWith(mockUserDto);
+            expect(result).toMatchObject({
+                firstName: mockUserDto.firstName,
+                email: mockUserDto.email,
+                cpf: mockUserDto.cpf,
+            });
+        });
+    });
+
+    describe('getUser', () => {
+        it('should return a user when found by CPF', async () => {
+            userRepository.getUserByCpf.mockReturnValueOnce(of(mockUserEntity));
+
+            const result$ = userUseCase.getUser(mockUserDto.cpf);
+
+            const result = await firstValueFrom(result$);
+
+            expect(userRepository.getUserByCpf).toHaveBeenCalledWith(mockUserDto.cpf);
+            expect(result).not.toBeNull();
+            expect(result.email).toBe(mockUserDto.email);
+        });
+
+        it('should throw error if user is not found', async () => {
+            userRepository.getUserByCpf.mockReturnValueOnce(of(null));
+
+            await expect(firstValueFrom(userUseCase.getUser('00000000000'))).rejects.toThrow(
+                new HttpCustomErrors('[ERROR] User not found: 00000000000', HttpStatus.NOT_FOUND),
+            );
+        });
+    });
+
+    describe('deleteUser', () => {
+        it('should delete a user by CPF', async () => {
+            userRepository.deleteUserByCpf.mockReturnValueOnce(of(undefined));
+
+            await userUseCase.deleteUser(mockUserDto.cpf);
+
+            expect(userRepository.deleteUserByCpf).toHaveBeenCalledWith(mockUserDto.cpf);
+        });
+
+        it('should emit error from observable', (done) => {
+            const error = new HttpCustomErrors('[ERROR]', 500);
+            userRepository.deleteUserByCpf.mockReturnValueOnce(throwError(() => error));
+
+            userUseCase.deleteUser(mockUserDto.cpf).subscribe({
+                next: () => done('Expected error, but got success'),
+                error: (err) => {
+                    expect(err).toBe(error);
+                    done();
+                }
+            });
+        });
+    });
+
+    describe('updateUser', () => {
+        it('should update a user and return updated user dto', async () => {
+            userRepository.updateUser.mockReturnValueOnce(of(mockUserDto));
+
+            const result = await firstValueFrom(userUseCase.updateUser(mockUserDto));
+
+            expect(userRepository.updateUser).toHaveBeenCalledWith(mockUserDto);
+            expect(result).toMatchObject({
+                firstName: mockUserDto.firstName,
+                lastName: mockUserDto.lastName,
+                email: mockUserDto.email,
+                cpf: mockUserDto.cpf,
+            });
+        });
+
+
+        it('should throw HttpCustomErrors if update fails', async () => {
+            const error = new HttpCustomErrors('[ERROR] Failed to update user', HttpStatus.BAD_REQUEST);
+            userRepository.updateUser.mockReturnValueOnce(throwError(() => error));
+
+            await expect(firstValueFrom(userUseCase.updateUser(mockUserDto))).rejects.toThrow(error);
+            expect(userRepository.updateUser).toHaveBeenCalledWith(mockUserDto);
+        });
+    });
+});
