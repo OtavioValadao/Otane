@@ -3,7 +3,7 @@ import { IsDate, IsEmail, IsInt, IsString } from "class-validator";
 import { Types } from "mongoose";
 
 
-export class UserDto {
+export class TentantDto {
     @Exclude()
     _id: Types.ObjectId;
 

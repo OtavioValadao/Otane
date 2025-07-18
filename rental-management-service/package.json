@@ -75,6 +75,19 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "collectCoverage": true,
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "domain/messaging/.*\\.ts$",
+      "domain/repositories/.*\\.ts$",
+      "interface/exceptions/.*\\.ts$",
+      "application/dtos/.*\\.ts$",
+       "application/mappers/.*\\.ts$",
+      ".*\\.spec\\.ts$",
+      ".*\\.module\\.ts$",
+      "src/main\\.ts$",
+      ".*\\.spec\\.ts$"
+    ]
   }
 }
