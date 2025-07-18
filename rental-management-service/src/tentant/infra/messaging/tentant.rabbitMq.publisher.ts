@@ -1,13 +1,13 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { UserDto } from 'src/users/domain/dtos/user.dto';
-import { UserPublisherPort } from 'src/users/domain/messaging/user.publisher';
+import { Injectable, Logger } from '@nestjs/common';
 import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
+import { Observable } from 'rxjs';
+import { TentantPublisherPort } from 'src/tentant/domain/messaging/tentant.publisher';
+import { TentantDto } from '../../application/dtos/tentant.dto';
 
 @Injectable()
-export class UserRabbitMqPublisher implements UserPublisherPort {
+export class TentantRabbitMqPublisher implements TentantPublisherPort {
     private client: ClientProxy;
-    private readonly logger = new Logger(UserRabbitMqPublisher.name)
+    private readonly logger = new Logger(TentantRabbitMqPublisher.name)
     constructor() {
         this.client = ClientProxyFactory.create({
             transport: Transport.RMQ,
@@ -18,15 +18,15 @@ export class UserRabbitMqPublisher implements UserPublisherPort {
                 exchangeType: process.env.RABBITMQ_EXCHANGE_TYPE!,
                 routingKey: process.env.RABBITMQ_ROUTING_KEY!,
                 queueOptions: {
-                    durable: true  
+                    durable: true
                 },
             },
         });
     }
 
-    sendWelcomeEmail(data: UserDto): Observable<void> {
+    sendWeelcomeEmail(data: TentantDto): Observable<void> {
         try {
-            this.logger.log('[INFO] Sending welcome email for user:', data);
+            this.logger.log('[INFO] Sending weelcome email for tentant:', data);
             return this.client.emit('email.weelcome', data);
         } catch (error) {
             this.logger.error('Error to send message', error);
