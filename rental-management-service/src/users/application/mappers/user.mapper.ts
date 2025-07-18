@@ -1,6 +1,6 @@
 import { plainToInstance } from "class-transformer";
-import { UserEntity } from "../entities/user.entity";
 import { UserDto } from "../dtos/user.dto";
+import { UserEntity } from "../../domain/entities/user.entity";
 
 export const toUserEntity = (userDto: UserDto): UserEntity => {
     return plainToInstance(UserEntity, userDto);

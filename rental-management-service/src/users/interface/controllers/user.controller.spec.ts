@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { Types } from 'mongoose';
-import { UserDto } from '../domain/dtos/user.dto';
-import { UserUseCase } from '../use-case/user.use-case';
+import { UserUseCase } from '../../application/use-case/user.use-case';
+import { UserDto } from '../../application/dtos/user.dto';
 
 describe('UserController', () => {
     let userController: UserController;

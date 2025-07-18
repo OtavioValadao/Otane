@@ -1,10 +1,10 @@
-import { SchemaFactory, Schema, Prop } from "@nestjs/mongoose";
-import { Document, HydratedDocument, ObjectId } from "mongoose";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { HydratedDocument } from "mongoose";
 
 export type UserDocument = HydratedDocument<UserEntity>;
 
 @Schema()
-export class UserEntity{
+export class UserEntity {
 
     @Prop()
     firstName: string;

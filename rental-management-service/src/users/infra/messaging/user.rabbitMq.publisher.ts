@@ -1,8 +1,8 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { UserDto } from 'src/users/domain/dtos/user.dto';
-import { UserPublisherPort } from 'src/users/domain/messaging/user.publisher';
+import { Injectable, Logger } from '@nestjs/common';
 import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
+import { Observable } from 'rxjs';
+import { UserPublisherPort } from 'src/users/domain/messaging/user.publisher';
+import { UserDto } from '../../application/dtos/user.dto';
 
 @Injectable()
 export class UserRabbitMqPublisher implements UserPublisherPort {
@@ -18,7 +18,7 @@ export class UserRabbitMqPublisher implements UserPublisherPort {
                 exchangeType: process.env.RABBITMQ_EXCHANGE_TYPE!,
                 routingKey: process.env.RABBITMQ_ROUTING_KEY!,
                 queueOptions: {
-                    durable: true  
+                    durable: true
                 },
             },
         });

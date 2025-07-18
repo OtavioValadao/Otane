@@ -1,12 +1,11 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
-import { Model } from "mongoose";
-import { UserDto } from "../../domain/dtos/user.dto";
-import { UserDocument, UserEntity } from "../../domain/entities/user.entity";
 import { InjectModel } from "@nestjs/mongoose";
-import { HttpCustomErrors } from "../../domain/errors/http.custom.error.erros";
+import { Model } from "mongoose";
 import { catchError, defer, from, map, Observable, switchMap, throwError } from "rxjs";
-import { log } from "console";
-import { UserRepository } from "src/users/domain/repositories/user.repository";
+import { HttpCustomErrors } from "../../interface/exceptions/http.custom.error.erros";
+import { UserDto } from "../../application/dtos/user.dto";
+import { UserDocument, UserEntity } from "../../domain/entities/user.entity";
+import { UserRepository } from "../../domain/repositories/user.repository";
 
 @Injectable()
 export class MongoUserRepository implements UserRepository {

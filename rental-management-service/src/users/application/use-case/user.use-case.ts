@@ -1,10 +1,10 @@
 import { HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { catchError, map, Observable, throwError } from "rxjs";
-import { UserDto } from "../domain/dtos/user.dto";
-import { HttpCustomErrors } from "../domain/errors/http.custom.error.erros";
-import { toUserDto, toUserEntity } from "../domain/mappers/user.mapper";
-import { MongoUserRepository } from "../infra/repositories/mongo.users.repository";
-import { UserRabbitMqPublisher } from "../infra/messaging/user.rabbitMq.publisher";
+import { MongoUserRepository } from "../../infra/repositories/mongo.users.repository";
+import { UserRabbitMqPublisher } from "../../infra/messaging/user.rabbitMq.publisher";
+import { UserDto } from "../dtos/user.dto";
+import { toUserDto, toUserEntity } from "../mappers/user.mapper";
+import { HttpCustomErrors } from "../../interface/exceptions/http.custom.error.erros";
 
 @Injectable()
 export class UserUseCase {

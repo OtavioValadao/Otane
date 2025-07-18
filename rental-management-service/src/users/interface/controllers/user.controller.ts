@@ -1,9 +1,7 @@
-import { Body, Post, Controller, Get, HttpCode, Delete, Put } from "@nestjs/common";
-import { UserDto } from "../domain/dtos/user.dto";
-import { Headers } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, HttpCode, Post, Put } from "@nestjs/common";
 import { Observable } from "rxjs";
-import { UserUseCase } from "../use-case/user.use-case";
-
+import { UserDto } from "../../application/dtos/user.dto";
+import { UserUseCase } from "../../application/use-case/user.use-case";
 
 @Controller('users')
 export class UserController {

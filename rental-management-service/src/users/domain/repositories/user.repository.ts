@@ -1,7 +1,6 @@
 import { Observable } from "rxjs";
 import { UserEntity } from "../entities/user.entity";
-import { UserDto } from "../dtos/user.dto";
-
+import { UserDto } from "../../application/dtos/user.dto";
 
 export interface UserRepository {
     saveUser(user: UserEntity): Observable<UserDto>;

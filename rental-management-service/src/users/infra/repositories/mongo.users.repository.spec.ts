@@ -1,10 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { HttpStatus } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
-import { UserEntity } from '../../domain/entities/user.entity';
+import { Test, TestingModule } from '@nestjs/testing';
 import { Model } from 'mongoose';
 import { firstValueFrom, of } from 'rxjs';
-import { HttpCustomErrors } from '../../domain/errors/http.custom.error.erros';
-import { HttpStatus } from '@nestjs/common';
+import { UserEntity } from '../../domain/entities/user.entity';
+import { HttpCustomErrors } from '../../interface/exceptions/http.custom.error.erros';
 import { MongoUserRepository } from './mongo.users.repository';
 
 describe('UserRepository', () => {

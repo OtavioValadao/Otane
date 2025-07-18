@@ -1,20 +1,26 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { UserEntity } from "../domain/entities/user.entity";
 import { UserUseCase } from "./user.use-case";
-import { MongoUserRepository } from "../infra/repositories/mongo.users.repository";
-import { UserDto } from "../domain/dtos/user.dto";
 import { HttpStatus } from "@nestjs/common";
 import { Types } from "mongoose";
-import { HttpCustomErrors } from "../domain/errors/http.custom.error.erros";
 import { firstValueFrom, Observable, of, throwError } from "rxjs";
+import { UserDto } from "../dtos/user.dto";
+import { UserEntity } from "../../domain/entities/user.entity";
+import { MongoUserRepository } from "../../infra/repositories/mongo.users.repository";
+import { HttpCustomErrors } from "../../interface/exceptions/http.custom.error.erros";
+import { UserRabbitMqPublisher } from "../../infra/messaging/user.rabbitMq.publisher";
 
 describe('UserUseCase', () => {
     let userUseCase: UserUseCase;
+
     let userRepository: {
         saveUser: jest.Mock<Observable<UserDto>, [UserDto]>,
         getUserByCpf: jest.Mock<Observable<UserEntity | null>, string[]>,
         deleteUserByCpf: jest.Mock<Observable<void>, [string]>,
         updateUser: jest.Mock<Observable<UserDto>, [UserDto]>,
+    };
+
+    let userPublisher: {
+        sendWelcomeEmail: jest.Mock<Observable<void>, [UserDto]>,
     };
 
     const mockUserDto: UserDto = {
@@ -34,6 +40,7 @@ describe('UserUseCase', () => {
         isActive: true,
     };
 
+
     let mockRepo: jest.Mocked<MongoUserRepository>;
 
     beforeEach(async () => {
@@ -44,12 +51,21 @@ describe('UserUseCase', () => {
             updateUser: jest.fn(),
         };
 
+        userPublisher = {
+            sendWelcomeEmail: jest.fn(),
+        };
+
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 UserUseCase,
                 {
                     provide: MongoUserRepository,
                     useValue: userRepository,
+
+                },
+                {
+                    provide: UserRabbitMqPublisher,
+                    useValue: userPublisher,
                 },
             ],
         }).compile();
@@ -60,19 +76,27 @@ describe('UserUseCase', () => {
 
     describe('createUser', () => {
         it('should create a user and return UserDto', async () => {
-            // Mock saveUser para retornar Observable com mockUserDto
+           
             userRepository.saveUser.mockReturnValueOnce(of(mockUserDto));
+
+            userPublisher.sendWelcomeEmail.mockReturnValueOnce(of(undefined));
 
             const result$ = userUseCase.createUser(mockUserDto);
 
             const result = await firstValueFrom(result$);
 
             expect(userRepository.saveUser).toHaveBeenCalledWith(mockUserDto);
+
             expect(result).toMatchObject({
                 firstName: mockUserDto.firstName,
                 email: mockUserDto.email,
                 cpf: mockUserDto.cpf,
             });
+
+            expect(userPublisher.sendWelcomeEmail).toHaveBeenCalledWith(expect.objectContaining({
+                cpf: mockUserDto.cpf,
+                email: mockUserDto.email,
+            }));
         });
     });
 
